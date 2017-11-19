@@ -1,7 +1,7 @@
 package org.metarchive.mex.log4mex.core;
 
+import org.metarchive.mex.core.MEXEnum;
 import org.metarchive.mex.log4mex.InstanceObjects;
-import org.aksw.mex.util.MEXEnum;
 
 /**
  * Created by esteves on 25.06.15.

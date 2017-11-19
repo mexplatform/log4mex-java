@@ -1,9 +1,9 @@
 package org.metarchive.mex.log4mex.core;
 
+import org.metarchive.mex.core.MEXEnum;
+import org.metarchive.mex.core.mappings.MEXCORE_10;
+import org.metarchive.mex.core.ontologies.PROVO;
 import org.metarchive.mex.log4mex.InstanceObjects;
-import org.aksw.mex.util.MEXEnum;
-import org.aksw.mex.util.ontology.mex.MEXCORE_10;
-import org.aksw.mex.util.ontology.PROVO;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;

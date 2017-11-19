@@ -61,8 +61,17 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>3.5.1</version>
                 <configuration>
                     <tagBase>https://svn.mycompany.com/repos/myapplication/releases</tagBase>
                 </configuration>
@@ -95,6 +104,26 @@
         <dependency>
             <groupId>com.github.METArchive</groupId>
             <artifactId>mex-vocabulary</artifactId>
+            <version>1.0.2b</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>2.13.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.metarchive.mex</groupId>
+            <artifactId>core</artifactId>
             <version>1.0.3</version>
         </dependency>
     </dependencies>

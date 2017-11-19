@@ -21,11 +21,11 @@ package org.metarchive.mex.log4mex;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
+import org.metarchive.mex.core.MEXConstant;
+import org.metarchive.mex.core.MEXController;
+import org.metarchive.mex.core.MEXEnum;
 import org.metarchive.mex.log4mex.core.ApplicationContextVO;
 import org.metarchive.mex.log4mex.core.ExperimentVO;
-import org.aksw.mex.util.MEXConstant;
-import org.aksw.mex.util.MEXController;
-import org.aksw.mex.util.MEXEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -21,14 +21,15 @@ package org.metarchive.mex.log4mex;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
+import org.metarchive.mex.core.MEXEnum;
 import org.metarchive.mex.log4mex.algo.AlgorithmVO;
 import org.metarchive.mex.log4mex.core.ExampleVO;
 import org.metarchive.mex.log4mex.core.PhaseVO;
 import org.metarchive.mex.log4mex.perf.IMeasure;
 import org.metarchive.mex.log4mex.perf.example.ExamplePerformanceMeasureVO;
 import org.metarchive.mex.log4mex.perf.overall.*;
-import org.aksw.mex.util.MEXEnum;
 import org.apache.commons.lang3.EnumUtils;
+
 
 import java.util.*;
 

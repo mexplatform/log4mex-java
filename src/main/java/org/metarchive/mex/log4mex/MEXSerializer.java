@@ -30,19 +30,18 @@ import org.metarchive.mex.log4mex.algo.ToolVO;
 import org.metarchive.mex.log4mex.core.*;
 import org.metarchive.mex.log4mex.perf.example.ExamplePerformanceMeasureVO;
 import org.metarchive.mex.log4mex.perf.overall.*;
-import org.aksw.mex.util.MEXConstant;
-import org.aksw.mex.util.MEXEnum;
-import org.aksw.mex.util.ontology.DCAT;
-import org.aksw.mex.util.ontology.DOAP;
-import org.aksw.mex.util.ontology.FOAF;
-import org.aksw.mex.util.ontology.PROVO;
-import org.aksw.mex.util.ontology.mex.MEXALGO_10;
-import org.aksw.mex.util.ontology.mex.MEXCORE_10;
-import org.aksw.mex.util.ontology.mex.MEXPERF_10;
+import org.metarchive.mex.core.MEXConstant;
+import org.metarchive.mex.core.MEXEnum;
+import org.metarchive.mex.core.ontologies.DCAT;
+import org.metarchive.mex.core.ontologies.DOAP;
+import org.metarchive.mex.core.ontologies.FOAF;
+import org.metarchive.mex.core.ontologies.PROVO;
+import org.metarchive.mex.core.mappings.MEXALGO_10;
+import org.metarchive.mex.core.mappings.MEXCORE_10;
+import org.metarchive.mex.core.mappings.MEXPERF_10;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1156,7 +1155,6 @@ public class MEXSerializer {
      * check if an instance has been defined before, avoiding unnecessary duplicates
      * @param obj
      * @param current
-     * @param lst
      * @return instance name
      * @throws Exception
      */
