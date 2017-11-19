@@ -1,6 +1,6 @@
 ## Do you need an API to export machine learning configurations and outcomes?
 
-<img src="http://dne5.com/mex/logos/logo_mex-log4mex2_peq.png" data-canonical-src="http://dne5.com/mex/logos/logo_mex-log4mex2_peq.png" width="40%" height="40%" />
+<!--<img src="http://dne5.com/mex/logos/logo_mex-log4mex2_peq.png" data-canonical-src="http://dne5.com/mex/logos/logo_mex-log4mex2_peq.png" width="40%" height="40%" />-->
 
 * LOG4MEX helps developers to manage ML metadata, improving interoperability and adding provenance information to the experiment.
 * No need to create scripts to manage the outputs.
@@ -9,22 +9,22 @@
 
 ![LOG4MEX Relations](http://dne5.com/mex/imagens/mex_relations_lod.png)
 
-##Requirements
+## Requirements
 Java 8, Maven 3
 
-##License
+## License
 LOG4MEX - a MEX Project - is Open Source and licensed under the [GNU General Public License 3](http://www.gnu.org/licenses/gpl-3.0.en.html) (Copyright (c) 2014-2016, Diego Esteves).
 
-##Demo and Documentation
+## Demo and Documentation
 * [Project Site](http://aksw.github.io/mexproject/)
 * [Javadoc](http://dne5.com/mex/documentation/log4mex/)
 * [SPARQL Endpoint](http://mex.aksw.org/sparql)
 * [MEX Wiki: LOG4MEX Use Cases](https://github.com/AKSW/mexproject/wiki/LOG4MEX-Use-Cases)
 
-##Bugs
+## Bugs
 Found a :bug: bug? [Open an issue](https://github.com/AKSW/fox/issues/new) 
 
-##Changelog
+## Changelog
 ### [v1.0.2]
 * MEX vocabulary update
 * Fixing serialization bug
