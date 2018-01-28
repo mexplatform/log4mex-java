@@ -146,11 +146,6 @@ public class ApplicationContextVO extends InstanceObjects {
     }
 
 
-
-    /**
-     * must have name or uri
-     * @return
-     */
     public boolean hasValue(){
 
         if ((this._givenName != null && !StringUtils.isBlank(this._givenName) && !StringUtils.isEmpty(this._givenName)) &&

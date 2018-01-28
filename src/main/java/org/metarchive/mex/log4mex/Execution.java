@@ -63,7 +63,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets the id of an execution
-     * @return
+     * @return id
      */
     protected String getId() {
         return _id;
@@ -71,7 +71,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets the target class for given execution
-     * @return
+     * @return target class
      */
     protected String getTargetClass() {
         return _targetClass;
@@ -79,7 +79,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets the start time for given execution
-     * @return
+     * @return start date
      */
     protected Date getStartedAtTime() {
         return _startedAtTime;
@@ -87,7 +87,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets end time for given execution
-     * @return
+     * @return end time
      */
     protected Date getEndedAtTime() {
         return _endedAtTime;
@@ -95,7 +95,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets the Phase associated to an Execution
-     * @return
+     * @return end time
      */
     protected PhaseVO getPhase() {
         return _phase;
@@ -103,7 +103,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets the Algorithm associated to an Execution
-     * @return
+     * @return phase
      */
     protected AlgorithmVO getAlgorithm() {
         return _algo;
@@ -111,7 +111,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets the ExperimentConfiguration which groups an Execution
-     * @return
+     * @return algorithm
      */
     private ExperimentConfigurationVO getExpConf() {
         return _expConf;
@@ -119,7 +119,7 @@ public abstract class Execution extends InstanceObjects {
 
     /**
      * gets the Performance measures for an Execution
-     * @return
+     * @return exp configuration
      */
     protected List<Measure> getPerformances() {
         return _performances;
@@ -130,7 +130,7 @@ public abstract class Execution extends InstanceObjects {
      * associated to an Execution. It is worth to note that we always have a list of Examples once we each cell
      * in a table is an mexcore:Example class. mexcore:datasetColumn and mexcore:datasetRow indicate the position
      * and prov:value contains the desired value of a cell
-     * @return
+     * @return examples
      */
     protected List<ExampleVO> getExamples(){
         return this._examples;
@@ -150,24 +150,40 @@ public abstract class Execution extends InstanceObjects {
     
     /**********************************************************************************************************************************************
      *                                                                  setters
-     **********************************************************************************************************************************************/
+     *********************************************************************************************************************************************
+     * @param value*/
 
     public abstract void setStartsAtPosition(String value);
 
+    /**
+     * @param value
+     */
     public abstract void setEndsAtPosition(String value);
 
+    /**
+     * @param _targetClass
+     */
     public void setTargetClass(String _targetClass) {
         this._targetClass = _targetClass;
     }
 
+    /**
+     * @param value
+     */
     public void setStartDate(Date value){
         this._startedAtTime = value;
     }
 
+    /**
+     * @param value
+     */
     public void setEndDate(Date value){
         this._endedAtTime = value;
     }
 
+    /**
+     * @param value
+     */
     public void setAlgorithm(AlgorithmVO value){
         this._algo = value;
     }
@@ -175,7 +191,7 @@ public abstract class Execution extends InstanceObjects {
     /**
      *
      * @param algorithmidentifier (instanceName or algorithmID)
-     * @return
+     * @return true or false
      * @throws Exception
      */
     public boolean setAlgorithm(String algorithmidentifier) throws Exception{
@@ -209,7 +225,7 @@ public abstract class Execution extends InstanceObjects {
      * @param description
      * @param formula
      * @param value
-     * @return
+     * @return true or false
      */
     public boolean addPerformance(String id, String description, String formula, Double value){
         Measure m = new UserDefinedMeasureVO(id, description, formula, value);
@@ -221,7 +237,7 @@ public abstract class Execution extends InstanceObjects {
      * @param exampleIdentifier
      * @param predictedValue
      * @param realValue
-     * @return
+     * @return true or false
      */
     public boolean addPerformance(String exampleIdentifier, String predictedValue, String realValue){
         ExamplePerformanceMeasureVO m = new ExamplePerformanceMeasureVO(exampleIdentifier, predictedValue, realValue);
@@ -232,7 +248,7 @@ public abstract class Execution extends InstanceObjects {
      * add PerformanceMeasure (related to OverallExecution)
      * @param m
      * @param v
-     * @return
+     * @return true or false
      */
     public void addPerformance(MEXEnum.EnumMeasures m, double v) throws Exception{
         String type = "";
@@ -278,6 +294,11 @@ public abstract class Execution extends InstanceObjects {
 
     }
 
+    /**
+     * @param p
+     * @param value
+     * @return
+     */
     private boolean addClassificationPerformance(String p, double value) {
         ClassificationMeasureVO m = new ClassificationMeasureVO();
         m.setValue(value);
@@ -285,6 +306,11 @@ public abstract class Execution extends InstanceObjects {
         return this._performances.add(m);
     }
 
+    /**
+     * @param p
+     * @param value
+     * @return
+     */
     private boolean addRegressionPerformance(String p, double value) {
         RegressionMeasureVO m = new RegressionMeasureVO();
         m.setValue(value);
@@ -292,6 +318,11 @@ public abstract class Execution extends InstanceObjects {
         return this._performances.add(m);
     }
 
+    /**
+     * @param p
+     * @param value
+     * @return
+     */
     private boolean addStatisticalPerformance(String p, double value) {
         StatisticalMeasureVO m = new StatisticalMeasureVO();
         m.setValue(value);
@@ -299,6 +330,11 @@ public abstract class Execution extends InstanceObjects {
         return this._performances.add(m);
     }
 
+    /**
+     * @param p
+     * @param value
+     * @return
+     */
     private boolean addClusteringPerformance(String p, double value) {
         ClusteringMeasureVO m = new ClusteringMeasureVO();
         m.setValue(value);
@@ -312,7 +348,8 @@ public abstract class Execution extends InstanceObjects {
      * @param value value of the example item
      * @param datasetRow indicates the dataset row
      * @param datasetColumn indicates the dataset column
-     * @return
+     * @param type
+     * @return example
      * @throws Exception
      */
     public boolean addDatasetExample(String id, String value, long datasetRow, long datasetColumn, MEXEnum.EnumExamplesType type) throws Exception{

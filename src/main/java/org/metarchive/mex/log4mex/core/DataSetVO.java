@@ -38,10 +38,6 @@ public class DataSetVO extends InstanceObjects {
         this._uri = value;
     }
 
-    /**
-     * must have name or uri
-     * @return
-     */
     public boolean hasValue(){
 
         if ((this._name != null && !StringUtils.isBlank(this._name) && !StringUtils.isEmpty(this._name)) ||
