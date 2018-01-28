@@ -1,18 +1,18 @@
 /**
  * Copyright (C) 2014 - 2016, Diego Esteves
- *
+ * <p>
  * This file is part of LOG4MEX.
- *
+ * <p>
  * LOG4MEX is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * LOG4MEX is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -42,6 +42,7 @@ import org.metarchive.mex.core.mappings.MEXPERF_10;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,13 +58,14 @@ import java.util.Properties;
  */
 public class MEXSerializer {
 
-    private static       MEXSerializer   instance = null;
-    private static final Logger          LOGGER = LoggerFactory.getLogger(MEXSerializer.class);
+    private static MEXSerializer instance = null;
+    private static final Logger LOGGER = LoggerFactory.getLogger(MEXSerializer.class);
 
-    protected MEXSerializer() {}
+    protected MEXSerializer() {
+    }
 
     public static MEXSerializer getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new MEXSerializer();
         }
         return instance;
@@ -71,29 +73,27 @@ public class MEXSerializer {
 
     private boolean parse(MyMEX mex) throws Exception {
 
-        try{
+        /* minimal set of classes to be implemented */
 
-            /* minimal set of classes to be implemented */
+        if (mex.getExperiment() == null || StringUtils.isEmpty(mex.getExperiment().getId()) || StringUtils.isBlank(mex.getExperiment().getId())) {
+            LOGGER.warn("[EXPERIMENT]: missing experiment id!");
+            throw new Exception("[EXPERIMENT]: missing experiment id!");
+        }
 
-            if (mex.getExperiment() == null || StringUtils.isEmpty(mex.getExperiment().getId()) ||  StringUtils.isBlank(mex.getExperiment().getId())) {
-                LOGGER.warn("[EXPERIMENT]: missing experiment id!");
-                return false;
+        if (!mex.getApplicationContext().hasValue()) {
+            LOGGER.warn("[APPLICATION_CONTEXT]: missing author name and email!");
+            throw new Exception("[APPLICATION_CONTEXT]: missing author name and email!");
+        }
+
+        List<ExperimentConfigurationVO> configurations = mex.getExperimentConfigurations();
+        for (int i = 0; i < configurations.size(); i++) {
+
+
+            //dataset
+            if (!configurations.get(i).DataSet().hasValue()) {
+                LOGGER.warn("[EXPERIMENT_CONFIGURATION]: missing parameters for dataset!");
+                throw new Exception("[EXPERIMENT_CONFIGURATION]: missing parameters for dataset!");
             }
-
-            if (!mex.getApplicationContext().hasValue()) {
-                LOGGER.warn("[APPLICATION_CONTEXT]: missing author name and email!");
-                return false;
-            }
-
-            List<ExperimentConfigurationVO> configurations = mex.getExperimentConfigurations();
-            for (int i = 0; i < configurations.size(); i++) {
-
-
-                //dataset
-                if (!configurations.get(i).DataSet().hasValue()) {
-                    LOGGER.warn("[EXPERIMENT_CONFIGURATION]: missing parameters for dataset!");
-                    return false;
-                }
 
                 /*
                 //sampling method
@@ -103,44 +103,40 @@ public class MEXSerializer {
                 }
                 */
 
-                if (configurations.get(i).getAlgorithms() == null
-                        || configurations.get(i).getAlgorithms().size() == 0){
-                    LOGGER.warn("[EXPERIMENT_CONFIGURATION]: missing algorithm(s)!");
-                    return false;
-                }
-
-                if (configurations.get(i).getExecutions() == null
-                        || configurations.get(i).getExecutions().size() == 0){
-                    LOGGER.warn("[EXPERIMENT_CONFIGURATION]: missing execution(s)!");
-                    return false;
-                }
-
-                for (int j = 0; j < configurations.get(i).getExecutions().size(); j++) {
-                    if ((configurations.get(i).getExecutions().get(j).getPerformances() == null ||
-                            configurations.get(i).getExecutions().get(j).getPerformances().size() == 0) &&
-                            StringUtils.isBlank(configurations.get(i).getExecutions().get(j).getErrorMessage())){
-                                LOGGER.warn("[PERFORMANCE]: missing execution's performance for the execution index " + String.valueOf(j) +
-                                        ". In case you have a run that have generated an exception, please set the execution's error message!");
-                                return false;
-                            }
-                }
-
+            if (configurations.get(i).getAlgorithms() == null
+                    || configurations.get(i).getAlgorithms().size() == 0) {
+                LOGGER.warn("[EXPERIMENT_CONFIGURATION]: missing algorithm(s)!");
+                throw new Exception("[EXPERIMENT_CONFIGURATION]: missing algorithm(s)!");
             }
 
-        }  catch (Exception e){
-            LOGGER.error(e.toString());
-            return false;
+            if (configurations.get(i).getExecutions() == null
+                    || configurations.get(i).getExecutions().size() == 0) {
+                LOGGER.warn("[EXPERIMENT_CONFIGURATION]: missing execution(s)!");
+                throw new Exception("[EXPERIMENT_CONFIGURATION]: missing execution(s)!");
+            }
+
+            for (int j = 0; j < configurations.get(i).getExecutions().size(); j++) {
+                if ((configurations.get(i).getExecutions().get(j).getPerformances() == null ||
+                        configurations.get(i).getExecutions().get(j).getPerformances().size() == 0) &&
+                        StringUtils.isBlank(configurations.get(i).getExecutions().get(j).getErrorMessage())) {
+                    LOGGER.warn("[PERFORMANCE]: missing execution's performance for the execution index " + String.valueOf(j) +
+                            ". In case you have a run that have generated an exception, please set the execution's error message!");
+                    throw new Exception("[PERFORMANCE]: missing execution's performance for the execution index " + String.valueOf(j) +
+                            ". In case you have a run that have generated an exception, please set the execution's error message!");
+                }
+            }
+
         }
 
         return true;
 
     }
 
-    private void setHeaders(Model model, String URIbase){
+    private void setHeaders(Model model, String URIbase) {
         //setting the headers
         model.setNsPrefix(PROVO.PREFIX, PROVO.NS);
         model.setNsPrefix(MEXCORE_10.PREFIX, MEXCORE_10.NS);
-        model.setNsPrefix(MEXPERF_10.PREFIX, MEXPERF_10.NS);
+        model.setNsPrefix(MEXPERF_10.PREFIX, MEXPep 8 e 9E RF_10.NS);
         model.setNsPrefix(MEXALGO_10.PREFIX, MEXALGO_10.NS);
         model.setNsPrefix("dc", DC_11.NS);
         model.setNsPrefix("owl", OWL.NS);
@@ -159,16 +155,16 @@ public class MEXSerializer {
      * i.e., excluding identical objects in different experiment configurations
      * @param mex
      */
-    private void updateInstanceNames(String URIbase, MyMEX mex) throws Exception{
+    private void updateInstanceNames(String URIbase, MyMEX mex) throws Exception {
 
 
-        try{
+        try {
 
             LOGGER.debug("creating the instance names...");
 
             if (mex.getApplicationContext() != null) {
                 mex.getApplicationContext().setIndividualName(URIbase + "app_" + mex.getUserHash());
-            }else{
+            } else {
                 throw new Exception("No application data informed!");
             }
 
@@ -179,7 +175,7 @@ public class MEXSerializer {
 
             if (mex.getExperiment() != null) {
                 mex.getExperiment().setIndividualName(URIbase + "exp_" + mex.getUserHash());
-            }else{
+            } else {
                 throw new Exception("No experiment defined!");
             }
 
@@ -191,47 +187,49 @@ public class MEXSerializer {
             for (Iterator<ExperimentConfigurationVO> experimentConfigs = mex.getExperimentConfigurations().iterator();
                  experimentConfigs.hasNext(); ) {
 
-                ExperimentConfigurationVO item = experimentConfigs.next(); i++;
+                ExperimentConfigurationVO item = experimentConfigs.next();
+                i++;
                 item.setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash());
 
-                if (item.Model() != null && item.Model().hasValue()){
-                    item.Model().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_mod" );}
-                else{
+                if (item.Model() != null && item.Model().hasValue()) {
+                    item.Model().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_mod");
+                } else {
                     LOGGER.warn("No model defined");
                 }
 
-                if (item.DataSet() != null && item.DataSet().hasValue()){
-                    item.DataSet().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_ds");}
-                else{
+                if (item.DataSet() != null && item.DataSet().hasValue()) {
+                    item.DataSet().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_ds");
+                } else {
                     LOGGER.warn("No dataset defined");
                 }
 
-                if (item.HardwareConfiguration() != null && item.HardwareConfiguration().hasValue()){
-                    item.HardwareConfiguration().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_hard" );}
-                else{
+                if (item.HardwareConfiguration() != null && item.HardwareConfiguration().hasValue()) {
+                    item.HardwareConfiguration().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_hard");
+                } else {
                     LOGGER.warn("No hardware defined");
                 }
 
                 if (item.SamplingMethod() != null && item.SamplingMethod().hasValue()) {
                     item.SamplingMethod().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_sm");
                     item.SamplingMethod().setLabel(setLabelSplitingTerms(item.SamplingMethod().getClassName()));
-                }else{
+                } else {
                     LOGGER.warn("No sampling method defined");
                 }
 
                 if (item.Tool() != null && item.Tool().hasValue()) {
                     item.Tool().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_tool");
-                }else{
+                } else {
                     LOGGER.warn("No tool defined");
                 }
 
-                if (item.getToolParameters() != null){
+                if (item.getToolParameters() != null) {
                     if (item.Tool() == null || !item.Tool().hasValue()) {
                         throw new Exception("Tool Parameters defined without a proper Tool defined! Please define also a Tool ...");
                     }
                     int auxtoolparam = 0;
-                    for(Iterator<ToolParameterVO> iparam = item.getToolParameters().iterator(); iparam.hasNext(); ) {
-                        ToolParameterVO toolParam = iparam.next(); auxtoolparam++;
+                    for (Iterator<ToolParameterVO> iparam = item.getToolParameters().iterator(); iparam.hasNext(); ) {
+                        ToolParameterVO toolParam = iparam.next();
+                        auxtoolparam++;
                         toolParam.setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_tool_param_" + auxtoolparam);
                     }
                 } else {
@@ -240,9 +238,10 @@ public class MEXSerializer {
 
                 if (item.getFeatures() != null) {
                     int auxf = 0;
-                    for (Iterator<FeatureVO> ifeature = item.getFeatures().iterator(); ifeature.hasNext();) {
-                        FeatureVO f = ifeature.next(); auxf++;
-                        f.setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_feat_" +auxf);
+                    for (Iterator<FeatureVO> ifeature = item.getFeatures().iterator(); ifeature.hasNext(); ) {
+                        FeatureVO f = ifeature.next();
+                        auxf++;
+                        f.setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_feat_" + auxf);
                     }
                 }
 
@@ -268,7 +267,7 @@ public class MEXSerializer {
 
                         if (e.getAlgorithm() != null) {
                             e.getAlgorithm().setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_exe_" + auxe + "_algo");
-                        }else{
+                        } else {
                             throw new Exception("There is no algorithm defined for execution (" + auxe + ") id: " + e.getId() + ". Did you set ALGORITHM and EXECUTION (.Execution(x).setAlgorithm(y))? ");
                         }
 
@@ -289,7 +288,7 @@ public class MEXSerializer {
                                 auxmea++;
                                 mea.setIndividualName(URIbase + "exp_cf_" + String.valueOf(i) + "_" + mex.getUserHash() + "_exe_" + auxe + "_mea_" + auxmea);
                             }
-                        }else{
+                        } else {
                             LOGGER.warn("Potential problem: no common measures defined for execution (" + auxe + ") id: " + e.getId());
                         }
 
@@ -321,7 +320,7 @@ public class MEXSerializer {
 
             LOGGER.debug("done...");
 
-        }catch (Exception e){
+        } catch (Exception e) {
             //LOGGER.error(e.toString());
             throw new Exception(e);
         }
@@ -336,7 +335,7 @@ public class MEXSerializer {
      * @param format
      * @throws Exception
      */
-    private void writeJena(String filename, String URIbase, MyMEX mex, MEXConstant.EnumRDFFormats format) throws Exception{
+    private void writeJena(String filename, String URIbase, MyMEX mex, MEXConstant.EnumRDFFormats format) throws Exception {
 
 
         Model model = ModelFactory.createDefaultModel();
@@ -361,7 +360,6 @@ public class MEXSerializer {
             Resource mexcore_FEATURE_COLLECTION = model.createResource(MEXCORE_10.NS + MEXCORE_10.ClasseTypes.FEATURE_COLLECTION);
             Resource mexcore_EXAMPLE = model.createResource(MEXCORE_10.NS + MEXCORE_10.ClasseTypes.EXAMPLE);
             Resource mexcore_EXAMPLE_COLLECTION = model.createResource(MEXCORE_10.NS + MEXCORE_10.ClasseTypes.EXAMPLE_COLLECTION);
-
 
 
             //MEX-ALGO
@@ -448,36 +446,37 @@ public class MEXSerializer {
                 _expHeader = model.createResource(mex.getExperiment().getIndividualName())
                         .addProperty(RDF.type, mexcore_EXP_HEADER)
                         .addProperty(MEXCORE_10.experimentHash, mex.getUserHash());
-                        if(StringUtils.isNotEmpty(mex.getExperiment().getId()) && StringUtils.isNotBlank(mex.getExperiment().getId())) {
-                            _expHeader.addProperty(DCTerms.identifier, mex.getExperiment().getId());
-                            _expHeader.addProperty(RDFS.label, "Experiment: " + mex.getExperiment().getId());
-                        }
-                        if(StringUtils.isNotEmpty(mex.getExperiment().getTitle()) && StringUtils.isNotBlank(mex.getExperiment().getTitle())) {
-                            _expHeader.addProperty(DCTerms.title, mex.getExperiment().getTitle());
-                        }
-                        if(mex.getExperiment().getDate() != null) {
-                            DateFormat df = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z");
-                            try{
-                                df.setLenient(false);
-                                df.parse(mex.getExperiment().getDate().toString());
-                                _expHeader.addProperty(DCTerms.date, new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(mex.getExperiment().getDate()));
-                            }catch (ParseException e) {}
-                        }
-                        if(StringUtils.isNotEmpty(mex.getExperiment().getAttributeSelectionDescription()) && StringUtils.isNotBlank(mex.getExperiment().getAttributeSelectionDescription())) {
-                            _expHeader.addProperty(MEXCORE_10.attributeSelectionDescription, mex.getExperiment().getAttributeSelectionDescription());
-                        }
-                        if(StringUtils.isNotEmpty(mex.getExperiment().getDataNormalizedDescription()) && StringUtils.isNotBlank(mex.getExperiment().getDataNormalizedDescription())) {
-                            _expHeader.addProperty(MEXCORE_10.dataNormalizedDescription, mex.getExperiment().getDataNormalizedDescription());
-                        }
-                        if(StringUtils.isNotEmpty(mex.getExperiment().getNoiseRemovedDescription()) && StringUtils.isNotBlank(mex.getExperiment().getNoiseRemovedDescription())) {
-                            _expHeader.addProperty(MEXCORE_10.noiseRemovedDescription, mex.getExperiment().getNoiseRemovedDescription());
-                        }
-                        if(StringUtils.isNotEmpty(mex.getExperiment().getOutliersRemovedDescription()) && StringUtils.isNotBlank(mex.getExperiment().getOutliersRemovedDescription())) {
-                            _expHeader.addProperty(MEXCORE_10.outliersRemovedDescription, mex.getExperiment().getOutliersRemovedDescription());
-                        }
-                        if(StringUtils.isNotEmpty(mex.getExperiment().getDescription()) && StringUtils.isNotBlank(mex.getExperiment().getDescription())) {
-                            _expHeader.addProperty(DCTerms.description, mex.getExperiment().getDescription());
-                        }
+                if (StringUtils.isNotEmpty(mex.getExperiment().getId()) && StringUtils.isNotBlank(mex.getExperiment().getId())) {
+                    _expHeader.addProperty(DCTerms.identifier, mex.getExperiment().getId());
+                    _expHeader.addProperty(RDFS.label, "Experiment: " + mex.getExperiment().getId());
+                }
+                if (StringUtils.isNotEmpty(mex.getExperiment().getTitle()) && StringUtils.isNotBlank(mex.getExperiment().getTitle())) {
+                    _expHeader.addProperty(DCTerms.title, mex.getExperiment().getTitle());
+                }
+                if (mex.getExperiment().getDate() != null) {
+                    DateFormat df = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z");
+                    try {
+                        df.setLenient(false);
+                        df.parse(mex.getExperiment().getDate().toString());
+                        _expHeader.addProperty(DCTerms.date, new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(mex.getExperiment().getDate()));
+                    } catch (ParseException e) {
+                    }
+                }
+                if (StringUtils.isNotEmpty(mex.getExperiment().getAttributeSelectionDescription()) && StringUtils.isNotBlank(mex.getExperiment().getAttributeSelectionDescription())) {
+                    _expHeader.addProperty(MEXCORE_10.attributeSelectionDescription, mex.getExperiment().getAttributeSelectionDescription());
+                }
+                if (StringUtils.isNotEmpty(mex.getExperiment().getDataNormalizedDescription()) && StringUtils.isNotBlank(mex.getExperiment().getDataNormalizedDescription())) {
+                    _expHeader.addProperty(MEXCORE_10.dataNormalizedDescription, mex.getExperiment().getDataNormalizedDescription());
+                }
+                if (StringUtils.isNotEmpty(mex.getExperiment().getNoiseRemovedDescription()) && StringUtils.isNotBlank(mex.getExperiment().getNoiseRemovedDescription())) {
+                    _expHeader.addProperty(MEXCORE_10.noiseRemovedDescription, mex.getExperiment().getNoiseRemovedDescription());
+                }
+                if (StringUtils.isNotEmpty(mex.getExperiment().getOutliersRemovedDescription()) && StringUtils.isNotBlank(mex.getExperiment().getOutliersRemovedDescription())) {
+                    _expHeader.addProperty(MEXCORE_10.outliersRemovedDescription, mex.getExperiment().getOutliersRemovedDescription());
+                }
+                if (StringUtils.isNotEmpty(mex.getExperiment().getDescription()) && StringUtils.isNotBlank(mex.getExperiment().getDescription())) {
+                    _expHeader.addProperty(DCTerms.description, mex.getExperiment().getDescription());
+                }
 
                 if (mex.getApplicationContext() != null) {
                     _expHeader.addProperty(PROVO.wasAttributedTo, _application);
@@ -495,10 +494,10 @@ public class MEXSerializer {
                             .addProperty(RDF.type, mexcore_EXP_CONF)
                             .addProperty(PROVO.wasStartedBy, _expHeader)
                             .addProperty(RDFS.label, item.getLabel());
-                    if(StringUtils.isNotEmpty(item.getId()) && StringUtils.isNotBlank(item.getId())) {
+                    if (StringUtils.isNotEmpty(item.getId()) && StringUtils.isNotBlank(item.getId())) {
                         _expConfiguration.addProperty(DCTerms.identifier, item.getId());
                     }
-                    if(StringUtils.isNotEmpty(item.getDescription()) && StringUtils.isNotBlank(item.getDescription())) {
+                    if (StringUtils.isNotEmpty(item.getDescription()) && StringUtils.isNotBlank(item.getDescription())) {
                         _expConfiguration.addProperty(DCTerms.description, item.getDescription());
                     }
 
@@ -516,14 +515,17 @@ public class MEXSerializer {
 
                             if (StringUtils.isNotBlank(item.Model().getId()) &&
                                     StringUtils.isNotEmpty(item.Model().getId())) {
-                                _model.addProperty(DCTerms.identifier, item.Model().getId());}
+                                _model.addProperty(DCTerms.identifier, item.Model().getId());
+                            }
 
                             if (StringUtils.isNotBlank(item.Model().getDescription()) &&
                                     StringUtils.isNotEmpty(item.Model().getDescription())) {
-                                _model.addProperty(DCTerms.description, item.Model().getDescription());}
+                                _model.addProperty(DCTerms.description, item.Model().getDescription());
+                            }
 
                             if (item.Model().getDate() != null) {
-                                _model.addProperty(DCTerms.date, item.Model().getDate().toString());}
+                                _model.addProperty(DCTerms.date, item.Model().getDate().toString());
+                            }
 
                         } else {
                             _model = model.getResource(auxIN);
@@ -549,7 +551,7 @@ public class MEXSerializer {
                                         .addProperty(RDFS.label, setLabelSplitingTerms(item.Tool().getName()))
                                         .addProperty(RDF.type, _tool);
 
-                            }else{
+                            } else {
                                 _imp = model.getResource(auxIN);
                             }
                             _expConfiguration.addProperty(PROVO.used, _imp);
@@ -566,7 +568,7 @@ public class MEXSerializer {
 
                             //TOOL PARAMETER
                             //int auxtoolp = 0;
-                            for(Iterator<ToolParameterVO> iparam = item.getToolParameters().iterator(); iparam.hasNext(); ) {
+                            for (Iterator<ToolParameterVO> iparam = item.getToolParameters().iterator(); iparam.hasNext(); ) {
                                 ToolParameterVO toolParam = iparam.next();
 
                                 String auxIN = objectCreatedBefore(toolParam, auxExpConf, mex.getExperimentConfigurations());
@@ -580,11 +582,11 @@ public class MEXSerializer {
                                             .addProperty(PROVO.value, toolParam.getValue())
                                             .addProperty(DCTerms.identifier, toolParam.getId());
 
-                                }else{
+                                } else {
                                     _toolParam = model.getResource(auxIN);
                                 }
 
-                                _imp.addProperty(MEXALGO_10.hasToolParameter,_toolParam);
+                                _imp.addProperty(MEXALGO_10.hasToolParameter, _toolParam);
                                 _toolcollection.addProperty(PROVO.hadMember, _toolParam);
                                 //auxtoolp++;
                             }
@@ -606,19 +608,22 @@ public class MEXSerializer {
                                     .addProperty(RDF.type, mexcore_SAMPLING_METHOD);
 
                             if (item.SamplingMethod().getFolds() != null && StringUtils.isNotBlank(item.SamplingMethod().getFolds().toString()) && StringUtils.isNotEmpty(item.SamplingMethod().getFolds().toString())) {
-                                _sampling.addProperty(MEXCORE_10.folds, item.SamplingMethod().getFolds().toString());}
+                                _sampling.addProperty(MEXCORE_10.folds, item.SamplingMethod().getFolds().toString());
+                            }
 
                             if (item.SamplingMethod().getSequential() != null && StringUtils.isNotBlank(item.SamplingMethod().getSequential().toString()) && StringUtils.isNotEmpty(item.SamplingMethod().getSequential().toString())) {
-                                _sampling.addProperty(MEXCORE_10.sequential, item.SamplingMethod().getSequential().toString());}
+                                _sampling.addProperty(MEXCORE_10.sequential, item.SamplingMethod().getSequential().toString());
+                            }
 
                             if (item.SamplingMethod().getTrainSize() != null && StringUtils.isNotBlank(item.SamplingMethod().getTrainSize().toString()) && StringUtils.isNotEmpty(item.SamplingMethod().getTrainSize().toString())) {
-                                _sampling.addProperty(MEXCORE_10.trainSize, item.SamplingMethod().getTrainSize().toString());}
+                                _sampling.addProperty(MEXCORE_10.trainSize, item.SamplingMethod().getTrainSize().toString());
+                            }
 
                             if (item.SamplingMethod().getTestSize() != null && StringUtils.isNotBlank(item.SamplingMethod().getTestSize().toString()) && StringUtils.isNotEmpty(item.SamplingMethod().getTestSize().toString())) {
-                                _sampling.addProperty(MEXCORE_10.testSize, item.SamplingMethod().getTestSize().toString());}
+                                _sampling.addProperty(MEXCORE_10.testSize, item.SamplingMethod().getTestSize().toString());
+                            }
 
-                        }
-                        else{
+                        } else {
                             _sampling = model.getResource(auxIN);
                         }
 
@@ -637,22 +642,28 @@ public class MEXSerializer {
                                     .addProperty(RDF.type, mexcore_HARDWARE);
 
                             if (StringUtils.isNotBlank(item.HardwareConfiguration().getOs()) && StringUtils.isNotEmpty(item.HardwareConfiguration().getOs())) {
-                                _hardware.addProperty(DOAP.os, item.HardwareConfiguration().getOs());}
+                                _hardware.addProperty(DOAP.os, item.HardwareConfiguration().getOs());
+                            }
 
                             if (StringUtils.isNotBlank(item.HardwareConfiguration().getCache()) && StringUtils.isNotEmpty(item.HardwareConfiguration().getCache())) {
-                                _hardware.addProperty(MEXCORE_10.cache, item.HardwareConfiguration().getCache());}
+                                _hardware.addProperty(MEXCORE_10.cache, item.HardwareConfiguration().getCache());
+                            }
 
                             if (StringUtils.isNotBlank(item.HardwareConfiguration().getCPU()) && StringUtils.isNotEmpty(item.HardwareConfiguration().getCPU())) {
-                                _hardware.addProperty(MEXCORE_10.cpu, item.HardwareConfiguration().getCPU());}
+                                _hardware.addProperty(MEXCORE_10.cpu, item.HardwareConfiguration().getCPU());
+                            }
 
                             if (StringUtils.isNotBlank(item.HardwareConfiguration().getMemory()) && StringUtils.isNotEmpty(item.HardwareConfiguration().getMemory())) {
-                                _hardware.addProperty(MEXCORE_10.memory, item.HardwareConfiguration().getMemory());}
+                                _hardware.addProperty(MEXCORE_10.memory, item.HardwareConfiguration().getMemory());
+                            }
 
                             if (StringUtils.isNotBlank(item.HardwareConfiguration().getHD()) && StringUtils.isNotEmpty(item.HardwareConfiguration().getHD())) {
-                                _hardware.addProperty(MEXCORE_10.hd, item.HardwareConfiguration().getHD());}
+                                _hardware.addProperty(MEXCORE_10.hd, item.HardwareConfiguration().getHD());
+                            }
 
                             if (StringUtils.isNotBlank(item.HardwareConfiguration().getVideo()) && StringUtils.isNotEmpty(item.HardwareConfiguration().getVideo())) {
-                                _hardware.addProperty(MEXCORE_10.video, item.HardwareConfiguration().getVideo());}
+                                _hardware.addProperty(MEXCORE_10.video, item.HardwareConfiguration().getVideo());
+                            }
 
                             _hardware.addProperty(RDFS.label, item.HardwareConfiguration().getLabel());
 
@@ -675,15 +686,18 @@ public class MEXSerializer {
                                     .addProperty(RDF.type, mexcore_DATASET);
 
                             if (StringUtils.isNotBlank(item.DataSet().getName()) && StringUtils.isNotEmpty(item.DataSet().getName())) {
-                                _dataset.addProperty(DCTerms.title, item.DataSet().getName());}
+                                _dataset.addProperty(DCTerms.title, item.DataSet().getName());
+                            }
 
                             if (StringUtils.isNotBlank(item.DataSet().getDescription()) && StringUtils.isNotEmpty(item.DataSet().getDescription())) {
-                                _dataset.addProperty(DCTerms.description, item.DataSet().getDescription());}
+                                _dataset.addProperty(DCTerms.description, item.DataSet().getDescription());
+                            }
 
                             if (StringUtils.isNotBlank(item.DataSet().getURI()) && StringUtils.isNotEmpty(item.DataSet().getURI())) {
-                                _dataset.addProperty(DCAT.landingPage, item.DataSet().getURI());}
+                                _dataset.addProperty(DCAT.landingPage, item.DataSet().getURI());
+                            }
 
-                        }else{
+                        } else {
                             _dataset = model.getResource(auxIN);
                         }
 
@@ -693,9 +707,9 @@ public class MEXSerializer {
 
 
                     //FEATURE COLLECTION
-                    if (item.getFeatures() != null && item.getFeatures().size() > 0){
+                    if (item.getFeatures() != null && item.getFeatures().size() > 0) {
 
-                        Resource _featurecollection = model.createResource(URIbase + "fea_col" + "_cf_" + (auxExpConf + 1) + "_"  + mex.getUserHash())
+                        Resource _featurecollection = model.createResource(URIbase + "fea_col" + "_cf_" + (auxExpConf + 1) + "_" + mex.getUserHash())
                                 .addProperty(RDF.type, mexcore_FEATURE_COLLECTION)
                                 .addProperty(RDFS.label, "Feature Collection");
 
@@ -724,11 +738,10 @@ public class MEXSerializer {
                         }
 
 
-
                     }
 
                     //EXECUTIONS (e)
-                    if (item.getExecutions()!= null && item.getExecutions().size() > 0){
+                    if (item.getExecutions() != null && item.getExecutions().size() > 0) {
                         int auxexecutions = 1;
 
                         for (Iterator<Execution> iexec = item.getExecutions().iterator(); iexec.hasNext(); ) {
@@ -741,15 +754,15 @@ public class MEXSerializer {
                                 //EXECUTION
                                 Resource mexcore_EXEC = null;
 
-                                if (e instanceof ExecutionIndividualVO){
+                                if (e instanceof ExecutionIndividualVO) {
                                     mexcore_EXEC = model.createResource(MEXCORE_10.NS + MEXCORE_10.ClasseTypes.EXECUTION_SINGLE);
                                     _exec.addProperty(RDF.type, mexcore_EXEC);
                                     _exec.addProperty(RDFS.label, "Single Execution: " + e.getId());
-                                }else  if (e instanceof ExecutionSetVO){
+                                } else if (e instanceof ExecutionSetVO) {
                                     mexcore_EXEC = model.createResource(MEXCORE_10.NS + MEXCORE_10.ClasseTypes.EXECUTION_OVERALL);
                                     _exec.addProperty(RDF.type, mexcore_EXEC);
                                     _exec.addProperty(RDFS.label, "Overall Execution: " + e.getId());
-                                }else{
+                                } else {
                                     throw new Exception("Execution type unknown!");
                                 }
 
@@ -778,10 +791,9 @@ public class MEXSerializer {
                                         _exec.addProperty(MEXCORE_10.endsAtPosition, temp.getEndsAtPosition());
                                     }
                                     _exec.addProperty(MEXCORE_10.group, model.createTypedLiteral("true", XSDDatatype.XSDboolean));
-                                }else{
+                                } else {
                                     _exec.addProperty(MEXCORE_10.group, model.createTypedLiteral("false", XSDDatatype.XSDboolean));
                                 }
-
 
 
                                 //PERFORMANCE MEASURE -> super class, there is no need to create it
@@ -795,24 +807,26 @@ public class MEXSerializer {
 
 
                                 //PHASE
-                                if (e.getPhase() != null){
+                                if (e.getPhase() != null) {
                                     //is there a similar resource in the list?
-                                        String auxIN = objectCreatedBefore(e.getPhase(), auxExpConf, mex.getExperimentConfigurations());
-                                        Resource _phase;
+                                    String auxIN = objectCreatedBefore(e.getPhase(), auxExpConf, mex.getExperimentConfigurations());
+                                    Resource _phase;
 
-                                        if (StringUtils.isEmpty(auxIN)){
-                                            Resource mexcore_PHASE = model.createResource(MEXCORE_10.NS + e.getPhase().getName());
-                                            if (StringUtils.isNotBlank(e.getPhase().getName().toString()) && StringUtils.isNotEmpty(e.getPhase().getName().toString())) {
-                                                //creating resource
-                                                _phase = model.createResource(e.getPhase().getIndividualName())
-                                                        .addProperty(RDFS.label, e.getPhase().getLabel())
-                                                        .addProperty(RDF.type, mexcore_PHASE);
-                                                _exec.addProperty(PROVO.used, _phase);}}
-                                    else{
+                                    if (StringUtils.isEmpty(auxIN)) {
+                                        Resource mexcore_PHASE = model.createResource(MEXCORE_10.NS + e.getPhase().getName());
+                                        if (StringUtils.isNotBlank(e.getPhase().getName().toString()) && StringUtils.isNotEmpty(e.getPhase().getName().toString())) {
+                                            //creating resource
+                                            _phase = model.createResource(e.getPhase().getIndividualName())
+                                                    .addProperty(RDFS.label, e.getPhase().getLabel())
+                                                    .addProperty(RDF.type, mexcore_PHASE);
+                                            _exec.addProperty(PROVO.used, _phase);
+                                        }
+                                    } else {
                                         _phase = model.getResource(auxIN);
-                                        _exec.addProperty(PROVO.used, _phase);}
-
+                                        _exec.addProperty(PROVO.used, _phase);
                                     }
+
+                                }
 
                                 //} //esse aqui sai???
 
@@ -867,26 +881,30 @@ public class MEXSerializer {
                                         Resource _algClass = model.createResource(MEXALGO_10.NS + e.getAlgorithm().getClassName());
                                         _algClass.addProperty(RDFS.label, setLabelSplitingTerms(e.getAlgorithm().getClassName()));
 
-                                        _alg.addProperty(MEXALGO_10.hasAlgorithmClass, _algClass );
+                                        _alg.addProperty(MEXALGO_10.hasAlgorithmClass, _algClass);
                                         _alg.addProperty(RDFS.label, setLabelSplitingTerms(e.getAlgorithm().getClassName()));
-                                    }else{
+                                    } else {
                                         //label
                                         if (StringUtils.isNotBlank(e.getAlgorithm().getLabel()) && StringUtils.isNotEmpty(e.getAlgorithm().getLabel())) {
-                                            _alg.addProperty(RDFS.label, e.getAlgorithm().getLabel());}
+                                            _alg.addProperty(RDFS.label, e.getAlgorithm().getLabel());
+                                        }
                                     }
 
 
-                                        _exec.addProperty(PROVO.used, _alg);
+                                    _exec.addProperty(PROVO.used, _alg);
 
                                     //id
                                     if (StringUtils.isNotBlank(e.getAlgorithm().getIdentifier()) && StringUtils.isNotEmpty(e.getAlgorithm().getIdentifier())) {
-                                        _alg.addProperty(DCTerms.identifier, e.getAlgorithm().getIdentifier());}
+                                        _alg.addProperty(DCTerms.identifier, e.getAlgorithm().getIdentifier());
+                                    }
                                     //uri
                                     if (e.getAlgorithm().getURI() != null && StringUtils.isNotBlank(e.getAlgorithm().getURI().toURL().toString()) && StringUtils.isNotEmpty(e.getAlgorithm().getURI().toURL().toString())) {
-                                        _alg.addProperty(DCAT.landingPage, e.getAlgorithm().getURI().toURL().toString());}
+                                        _alg.addProperty(DCAT.landingPage, e.getAlgorithm().getURI().toURL().toString());
+                                    }
                                     //acronym
                                     if (StringUtils.isNotBlank(e.getAlgorithm().getAcronym()) && StringUtils.isNotEmpty(e.getAlgorithm().getAcronym())) {
-                                        _alg.addProperty(MEXALGO_10.acronym, e.getAlgorithm().getAcronym());}
+                                        _alg.addProperty(MEXALGO_10.acronym, e.getAlgorithm().getAcronym());
+                                    }
 
 
                                     _exec.addProperty(PROVO.used, _alg);
@@ -902,7 +920,7 @@ public class MEXSerializer {
                                         _exec.addProperty(PROVO.used, _hypercollection);
 
 
-                                        for(Iterator<HyperParameterVO> iparam = e.getAlgorithm().getParameters().iterator(); iparam.hasNext(); ) {
+                                        for (Iterator<HyperParameterVO> iparam = e.getAlgorithm().getParameters().iterator(); iparam.hasNext(); ) {
                                             HyperParameterVO algoParam = iparam.next();
                                             if (algoParam != null) {
                                                 Resource _algoParam = null;
@@ -912,7 +930,7 @@ public class MEXSerializer {
                                                         .addProperty(PROVO.value, algoParam.getValue())
                                                         .addProperty(DCTerms.identifier, algoParam.getIdentifier());
 
-                                                _alg.addProperty(MEXALGO_10.hasHyperParameter,_algoParam);
+                                                _alg.addProperty(MEXALGO_10.hasHyperParameter, _algoParam);
                                                 _hypercollection.addProperty(PROVO.hadMember, _algoParam);
                                             }
                                         }
@@ -925,16 +943,16 @@ public class MEXSerializer {
                                     //Integer auxmea = 1;
 
                                     //COMMON MEASURES
-                                    for(Iterator<Measure> imea = e.getPerformances().iterator(); imea.hasNext(); ) {
+                                    for (Iterator<Measure> imea = e.getPerformances().iterator(); imea.hasNext(); ) {
                                         Measure mea = imea.next();
                                         if (mea != null) {
 
-                                            Resource mexperf_klass = null, mexperf_cla = null,     mexperf_reg = null,     mexperf_clu = null,     mexperf_sta = null, mexperf_custom = null , mexperf_example = null;
-                                            Resource mexperf_ins = null,   mexperf_cla_ins = null, mexperf_reg_ins = null, mexperf_clu_ins = null, mexperf_sta_ins = null, mexperf_custom_ins = null, mexperf_example_ins = null;
+                                            Resource mexperf_klass = null, mexperf_cla = null, mexperf_reg = null, mexperf_clu = null, mexperf_sta = null, mexperf_custom = null, mexperf_example = null;
+                                            Resource mexperf_ins = null, mexperf_cla_ins = null, mexperf_reg_ins = null, mexperf_clu_ins = null, mexperf_sta_ins = null, mexperf_custom_ins = null, mexperf_example_ins = null;
 
-                                            if (mea instanceof ClassificationMeasureVO){
+                                            if (mea instanceof ClassificationMeasureVO) {
 
-                                                if (mexperf_cla == null){
+                                                if (mexperf_cla == null) {
                                                     mexperf_cla_ins = model.createResource(mea.getIndividualName());
                                                     mexperf_cla = model.createResource(MEXPERF_10.NS + MEXPERF_10.ClasseTypes.CLASSIFICATION_MEASURE);
                                                 }
@@ -942,9 +960,9 @@ public class MEXSerializer {
                                                 mexperf_klass = mexperf_cla;
                                                 mexperf_ins = mexperf_cla_ins;
 
-                                            }else if (mea instanceof RegressionMeasureVO){
+                                            } else if (mea instanceof RegressionMeasureVO) {
 
-                                                if (mexperf_reg == null){
+                                                if (mexperf_reg == null) {
                                                     mexperf_reg_ins = model.createResource(mea.getIndividualName());
                                                     mexperf_reg = model.createResource(MEXPERF_10.NS + MEXPERF_10.ClasseTypes.REGRESSION_MEASURE);
                                                 }
@@ -952,9 +970,9 @@ public class MEXSerializer {
                                                 mexperf_klass = mexperf_reg;
                                                 mexperf_ins = mexperf_reg_ins;
 
-                                            }else if (mea instanceof ClusteringMeasureVO){
+                                            } else if (mea instanceof ClusteringMeasureVO) {
 
-                                                if (mexperf_clu == null){
+                                                if (mexperf_clu == null) {
                                                     mexperf_clu_ins = model.createResource(mea.getIndividualName());
                                                     mexperf_clu = model.createResource(MEXPERF_10.NS + MEXPERF_10.ClasseTypes.CLUSTERING_MEASURE);
                                                 }
@@ -962,9 +980,9 @@ public class MEXSerializer {
                                                 mexperf_klass = mexperf_clu;
                                                 mexperf_ins = mexperf_clu_ins;
 
-                                            }else if (mea instanceof StatisticalMeasureVO){
+                                            } else if (mea instanceof StatisticalMeasureVO) {
 
-                                                if (mexperf_sta == null){
+                                                if (mexperf_sta == null) {
                                                     mexperf_sta_ins = model.createResource(mea.getIndividualName());
                                                     mexperf_sta = model.createResource(MEXPERF_10.NS + MEXPERF_10.ClasseTypes.STATISTICAL_MEASURE);
                                                 }
@@ -987,7 +1005,7 @@ public class MEXSerializer {
 
                                     //OTHER MEASURES - EXAMPLE PERFORMANCE MEASURE
                                     List<Measure> examplePerformanceList = e.getPerformances(ExamplePerformanceMeasureVO.class);
-                                    if (examplePerformanceList != null && examplePerformanceList.size() > 0 ) {
+                                    if (examplePerformanceList != null && examplePerformanceList.size() > 0) {
 
                                         Resource _examplePerformanceCollection = model.createResource(URIbase + "exa_perf_col" + "_cf_" + (auxExpConf + 1) + "_" + mex.getUserHash())
                                                 .addProperty(RDF.type, mexperf_EXAMPLE_PERFORMANCE_COLLECTION)
@@ -1012,12 +1030,14 @@ public class MEXSerializer {
                                                     _examplePerf.addProperty(MEXPERF_10.realValue, epm.getRealValue());
                                                 }
                                                 auxep++;
-                                                _examplePerformanceCollection.addProperty(PROVO.hadMember, _examplePerf);}}
+                                                _examplePerformanceCollection.addProperty(PROVO.hadMember, _examplePerf);
+                                            }
+                                        }
                                     }
 
                                     //OTHER MEASURES - USER DEFINED MEASURE
                                     List<Measure> UserDefinedList = e.getPerformances(UserDefinedMeasureVO.class);
-                                    if (UserDefinedList != null && UserDefinedList.size() > 0 ) {
+                                    if (UserDefinedList != null && UserDefinedList.size() > 0) {
 
                                         Resource _userDefinedCollection = model.createResource(URIbase + "userdef_perf_col" + "_cf_" + (auxExpConf + 1) + "_" + mex.getUserHash())
                                                 .addProperty(RDF.type, mexperf_USER_DEFINED_PERFORMANCE_COLLECTION)
@@ -1045,7 +1065,9 @@ public class MEXSerializer {
                                                     _userdefPerf.addProperty(MEXPERF_10.formula, udm.getFormula());
                                                 }
                                                 auxudf++;
-                                                _userDefinedCollection.addProperty(PROVO.hadMember, _userdefPerf);}}
+                                                _userDefinedCollection.addProperty(PROVO.hadMember, _userdefPerf);
+                                            }
+                                        }
 
                                     }//PERFORMANCES - FOR
 
@@ -1068,17 +1090,17 @@ public class MEXSerializer {
 
             FileWriter out;
 
-            out = new FileWriter(filename + "." + format.toString().toLowerCase().replace("/","").replace(".","").replace("-",""));
+            out = new FileWriter(filename + "." + format.toString().toLowerCase().replace("/", "").replace(".", "").replace("-", ""));
 
             model.write(out, format.toString());
 
             out.close();
 
-        }catch (Exception e){
+        } catch (Exception e) {
 
             LOGGER.error(e.toString());
 
-            throw(e);
+            throw (e);
         }
 
     }
@@ -1098,28 +1120,30 @@ public class MEXSerializer {
         }
     }
 
-    private String setLabelSplitingTerms(String value){
+    private String setLabelSplitingTerms(String value) {
 
         String auxLabel = "";
 
         if (!value.isEmpty()) {
 
-            auxLabel = value.substring(0,1);
+            auxLabel = value.substring(0, 1);
             for (int i = 1; i < value.length(); i++) {
 
-                if (!value.substring(i, i+1).toString().isEmpty() &&
-                        value.substring(i, i+1).toString().toUpperCase().equals(value.substring(i, i+1).toString())) {
+                if (!value.substring(i, i + 1).toString().isEmpty() &&
+                        value.substring(i, i + 1).toString().toUpperCase().equals(value.substring(i, i + 1).toString())) {
 
-                    if (i!=value.length()-1 && !value.substring(i+1, i+2).toString().toUpperCase().equals(value.substring(i+1, i+2).toString())){
-                        if (!value.substring(i, i+1).matches("[0-9]")){
-                            auxLabel += " " + value.substring(i, i+1).toString() ;}
-                        else{
-                            auxLabel += value.substring(i, i+1).toString();
+                    if (i != value.length() - 1 && !value.substring(i + 1, i + 2).toString().toUpperCase().equals(value.substring(i + 1, i + 2).toString())) {
+                        if (!value.substring(i, i + 1).matches("[0-9]")) {
+                            auxLabel += " " + value.substring(i, i + 1).toString();
+                        } else {
+                            auxLabel += value.substring(i, i + 1).toString();
                         }
-                    }else{
-                        auxLabel += value.substring(i, i+1).toString();}
+                    } else {
+                        auxLabel += value.substring(i, i + 1).toString();
+                    }
                 } else {
-                    auxLabel += value.substring(i, i+1).toString();}
+                    auxLabel += value.substring(i, i + 1).toString();
+                }
             }
         }
         auxLabel = auxLabel.replace("_", " ");
@@ -1128,26 +1152,26 @@ public class MEXSerializer {
 
 
     public void saveToDisk(String filename, String URIbase, MyMEX mex, MEXConstant.EnumRDFFormats format) throws Exception {
-        try{
-            if (parse(mex)){
+        try {
+            if (parse(mex)) {
                 mex.setUserHash();
                 updateInstanceNames(URIbase, mex);
                 writeJena(filename, URIbase, mex, format);
-            }else{
+            } else {
                 throw new Exception("The MEX file could not be generated. Please see the log for more details");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             LOGGER.error(e.toString());
             throw new Exception(e);
         }
     }
 
-    public void parseAndSave(String filename,String URIbase, MyMEX mex, MEXConstant.EnumRDFFormats format) throws Exception {
+    public void parseAndSave(String filename, String URIbase, MyMEX mex, MEXConstant.EnumRDFFormats format) throws Exception {
         //try {
         writeJena(filename, URIbase, mex, format);
         //}catch (Exception error){
-            //LOGGER.error(error.toString());
-            //throw new Exception("The MEX file couldn't be parsed and saved.");
+        //LOGGER.error(error.toString());
+        //throw new Exception("The MEX file couldn't be parsed and saved.");
         //}
     }
 
@@ -1158,43 +1182,50 @@ public class MEXSerializer {
      * @return instance name
      * @throws Exception
      */
-    protected String objectCreatedBefore(Object obj, int current, List<ExperimentConfigurationVO> conf) throws Exception{
+    protected String objectCreatedBefore(Object obj, int current, List<ExperimentConfigurationVO> conf) throws Exception {
 
         //TODO: implement other objects later (e.g.: mex-core:Example)
 
         String ind = "";
 
-        try{
+        try {
 
             if ((current == 0 || conf == null || conf.size() == 1))
                 return "";
 
-            for (int i = 0; i < current; i++){
+            for (int i = 0; i < current; i++) {
                 ExperimentConfigurationVO item = conf.get(i);
 
-                if (obj instanceof ModelVO && item.Model().equals(obj)){
-                    ind = item.Model().getId(); return ind;}
-                else if (obj instanceof SamplingMethodVO && item.SamplingMethod().equals(obj)){
-                    ind = item.SamplingMethod().getIndividualName(); return ind;}
-                else if (obj instanceof PhaseVO && item.Phase().equals(obj)){
-                    ind = item.Phase().getIndividualName(); return ind;}
-                else if (obj instanceof HardwareConfigurationVO && item.HardwareConfiguration().equals(obj)){
-                    ind =  item.HardwareConfiguration().getIndividualName(); return ind;}
-                else if (obj instanceof ToolVO && item.Tool().equals(obj)){
-                    ind = item.Tool().getIndividualName(); return ind;}
-                else if (obj instanceof DataSetVO && item.DataSet().equals(obj)){
-                    ind = item.DataSet().getIndividualName(); return ind;}
-                else if (obj instanceof ToolParameterVO){
+                if (obj instanceof ModelVO && item.Model().equals(obj)) {
+                    ind = item.Model().getId();
+                    return ind;
+                } else if (obj instanceof SamplingMethodVO && item.SamplingMethod().equals(obj)) {
+                    ind = item.SamplingMethod().getIndividualName();
+                    return ind;
+                } else if (obj instanceof PhaseVO && item.Phase().equals(obj)) {
+                    ind = item.Phase().getIndividualName();
+                    return ind;
+                } else if (obj instanceof HardwareConfigurationVO && item.HardwareConfiguration().equals(obj)) {
+                    ind = item.HardwareConfiguration().getIndividualName();
+                    return ind;
+                } else if (obj instanceof ToolVO && item.Tool().equals(obj)) {
+                    ind = item.Tool().getIndividualName();
+                    return ind;
+                } else if (obj instanceof DataSetVO && item.DataSet().equals(obj)) {
+                    ind = item.DataSet().getIndividualName();
+                    return ind;
+                } else if (obj instanceof ToolParameterVO) {
                     //it's a list, iterate over it
                     List<ToolParameterVO> lstToolParameter = item.getToolParameters();
-                    if (lstToolParameter != null){
+                    if (lstToolParameter != null) {
                         for (ToolParameterVO toolParameter : lstToolParameter) {
-                            if (toolParameter.equals(obj)){
-                                ind = toolParameter.getIndividualName(); return ind;
+                            if (toolParameter.equals(obj)) {
+                                ind = toolParameter.getIndividualName();
+                                return ind;
                             }
                         }
                     }
-                } else if (obj instanceof PhaseVO){
+                } else if (obj instanceof PhaseVO) {
                     //TODO: implement
                 }
                 /*else {
@@ -1202,7 +1233,7 @@ public class MEXSerializer {
                 }*/
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             throw (e);
         }
 
